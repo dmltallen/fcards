@@ -1,0 +1,5 @@
+src-tauri/
+target/
+*.test
+cmd/e2e/
+cmd/mediaprobe/
