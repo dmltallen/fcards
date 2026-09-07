@@ -299,6 +299,27 @@ func saveState(workspaceID string, st *workspaceState) error {
 	return writeFile(path, data)
 }
 
+// LoadCached hydrates the service from the on-disk state file without any
+// network access. Used by `fcards status` and the omarchy bar widget.
+func (s *Service) LoadCached() error {
+	wsID := s.Config.WorkspaceID
+	if wsID == "" {
+		return fmt.Errorf("no workspace selected")
+	}
+	st, err := loadState(wsID)
+	if err != nil {
+		return err
+	}
+	s.SelectedTags = st.SelectedTags
+	s.Cards = st.Cards
+	s.Decks = st.Decks
+	s.History = st.History
+	if s.Settings == nil {
+		s.Settings = scheduler.DefaultSettings()
+	}
+	return nil
+}
+
 // --- refresh (bootstrap + deltas + history) ---
 
 // Refresh brings the workspace fully up to date: bootstrap when needed,

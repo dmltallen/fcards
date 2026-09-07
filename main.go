@@ -3,8 +3,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/google/uuid"
@@ -28,6 +30,9 @@ review: space reveal · 1 again · 2 hard · 3 good · 4 easy
 data lives in your flashcards-open-source-app account (Agent API);
 offline reviews are queued in ~/.local/share/fcards and flushed on launch.
 `)
+			return
+		case "status":
+			runStatus()
 			return
 		}
 	}
@@ -59,6 +64,45 @@ offline reviews are queued in ~/.local/share/fcards and flushed on launch.
 		fmt.Fprintln(os.Stderr, "fcards:", err)
 		os.Exit(1)
 	}
+}
+
+// runStatus prints a JSON snapshot from the local cache (no network):
+// queue counts, streak, and offline queue depth. Consumed by the
+// fcards omarchy bar widget and scripts.
+func runStatus() {
+	out := map[string]any{"ok": false}
+	cfg, err := store.LoadConfig()
+	if err != nil || cfg.WorkspaceID == "" {
+		printJSON(out)
+		return
+	}
+	client := api.NewClient(cfg.APIKey)
+	svc := sync.New(client, cfg, cfg.ReplicaID, cfg.InstallationID)
+	if err := svc.LoadCached(); err != nil {
+		printJSON(out)
+		return
+	}
+	now := time.Now()
+	counts := svc.Counts(now)
+	out = map[string]any{
+		"ok":            true,
+		"workspace":     cfg.WorkspaceName,
+		"due":           counts.Due + counts.RecentDue,
+		"new":           counts.New,
+		"reviewedToday": counts.ReviewedToday,
+		"streak":        svc.Streak(now),
+		"queued":        store.OutboxCount(),
+		"total":         len(svc.Cards),
+	}
+	printJSON(out)
+}
+
+func printJSON(v any) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return
+	}
+	fmt.Println(string(data))
 }
 
 // pickWorkspace selects the configured workspace (or the first available)
