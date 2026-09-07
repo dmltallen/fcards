@@ -1,0 +1,38 @@
+# Maintainer: Donald M.L.T. Allen <talallen.business@gmail.com>
+pkgname=fcards
+pkgver=0.2.0
+pkgrel=1
+pkgdesc="Terminal flashcards client for flashcards-open-source-app — keyboard-first, offline-first"
+arch=('x86_64' 'aarch64')
+url="https://github.com/dmltallen/fcards"
+license=('MIT')
+depends=('glibc')
+optdepends=('chafa: render card images as terminal block-art')
+makedepends=('go')
+options=('!debug')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('ae0c4f744702e2669e0fbc671604520ff492bf970188350ec6b1743a28db806f')
+
+build() {
+  cd "$pkgname-$pkgver"
+  export CGO_ENABLED=0
+  export GOPATH="$srcdir/gopath"
+  export GOCACHE="$srcdir/gocache"
+  go build -trimpath -ldflags="-s -w" -o fcards .
+}
+
+check() {
+  cd "$pkgname-$pkgver"
+  export CGO_ENABLED=0
+  export GOPATH="$srcdir/gopath"
+  export GOCACHE="$srcdir/gocache"
+  go test ./internal/scheduler/ ./internal/ui/
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  install -Dm755 fcards "$pkgdir/usr/bin/fcards"
+  install -Dm644 packaging/fcards.desktop "$pkgdir/usr/share/applications/fcards.desktop"
+  install -Dm644 packaging/flashcards.png "$pkgdir/usr/share/icons/hicolor/512x512/apps/flashcards.png"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

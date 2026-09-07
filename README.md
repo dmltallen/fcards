@@ -33,7 +33,19 @@ review:  space reveal · 1 again · 2 hard · 3 good · 4 easy · s skip · esc 
 
 ## Install
 
-Requirements: Go 1.25+, [chafa](https://hpjansson.org/chafa/) (optional, for card images).
+**AUR** (Arch / Omarchy):
+
+```sh
+paru -S fcards            # or your AUR helper of choice
+```
+
+**Release binaries** (no Go needed):
+
+```sh
+curl -fsSL https://github.com/dmltallen/fcards/releases/download/v0.2.0/fcards-linux-amd64   -o ~/.local/bin/fcards && chmod +x ~/.local/bin/fcards
+```
+
+**From source** (Go 1.25+):
 
 ```sh
 git clone https://github.com/dmltallen/fcards && cd fcards
@@ -43,8 +55,20 @@ cp packaging/flashcards.png ~/.local/share/icons/hicolor/512x512/apps/
 update-desktop-database ~/.local/share/applications
 ```
 
+Optional: `pacman -S chafa` for card image rendering.
+
 The desktop entry makes Flashcards appear in the Omarchy Apps menu (and any
-freedesktop launcher).
+freedesktop launcher). On Omarchy you can also install it with
+`omarchy install app Flashcards fcards` once the AUR package is live.
+
+## Omarchy bar widget
+
+A [Quickshell bar widget](https://github.com/dmltallen/fcards-omarchy) shows
+your due count at a glance — click opens the review session:
+
+```sh
+omarchy plugin add https://github.com/dmltallen/fcards-omarchy --enable
+```
 
 Omarchy keybinding — add to `~/.config/hypr/bindings.lua`:
 
