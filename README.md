@@ -36,9 +36,15 @@ review:  space reveal · 1 again · 2 hard · 3 good · 4 easy · s skip · esc 
 Requirements: Go 1.25+, [chafa](https://hpjansson.org/chafa/) (optional, for card images).
 
 ```sh
-git clone https://github.com/<you>/fcards && cd fcards
+git clone https://github.com/dmltallen/fcards && cd fcards
 go build -ldflags="-s -w" -o ~/.local/bin/fcards .
+cp packaging/fcards.desktop ~/.local/share/applications/
+cp packaging/flashcards.png ~/.local/share/icons/hicolor/512x512/apps/
+update-desktop-database ~/.local/share/applications
 ```
+
+The desktop entry makes Flashcards appear in the Omarchy Apps menu (and any
+freedesktop launcher).
 
 Omarchy keybinding — add to `~/.config/hypr/bindings.lua`:
 

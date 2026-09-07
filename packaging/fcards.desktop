@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Flashcards
+GenericName=Flashcard study app
+Comment=Flashcards Open Source App — terminal client (spaced repetition)
+Exec=foot -a fcards -e fcards
+TryExec=fcards
+Icon=flashcards
+Terminal=false
+Categories=Education;Science;Office;Utility;
+Keywords=flashcards;study;anki;spaced repetition;
+StartupWMClass=fcards
