@@ -11,8 +11,8 @@ import (
 
 // StatsModel shows streak, rating distribution, and a 12-week heatmap.
 type StatsModel struct {
-	theme  Theme
-	styles Styles
+	theme  *Theme
+	styles *Styles
 	loaded bool
 
 	streak   int
@@ -22,7 +22,7 @@ type StatsModel struct {
 	byRating [4]int
 }
 
-func NewStats(t Theme, s Styles) StatsModel {
+func NewStats(t *Theme, s *Styles) StatsModel {
 	return StatsModel{theme: t, styles: s, byDay: map[string]int{}}
 }
 

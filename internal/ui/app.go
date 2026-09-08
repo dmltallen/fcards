@@ -29,8 +29,8 @@ const (
 
 // App is the root bubbletea model.
 type App struct {
-	theme  Theme
-	styles Styles
+	theme  *Theme
+	styles *Styles
 
 	client *api.Client
 	cfg    *store.Config
@@ -60,19 +60,26 @@ type App struct {
 	debugReview bool
 	offline     bool
 	queued      int
+
+	themeFingerprint string
 }
 
 type tickMsg struct{}
+type themeTickMsg struct{}
+
+func offlineTick() tea.Cmd {
+	return tea.Tick(90*time.Second, func(time.Time) tea.Msg { return tickMsg{} })
+}
+
+func themeTick() tea.Cmd {
+	return tea.Tick(5*time.Second, func(time.Time) tea.Msg { return themeTickMsg{} })
+}
 
 type loginSuccessMsg struct{}
 type refreshDoneMsg struct{ err error }
 type outboxDrainedMsg struct {
 	applied   int
 	remaining int
-}
-
-func offlineTick() tea.Cmd {
-	return tea.Tick(90*time.Second, func(time.Time) tea.Msg { return tickMsg{} })
 }
 
 // isOfflineErr reports whether an error is a transport failure (as opposed to
@@ -92,19 +99,19 @@ func NewApp(cfg *store.Config, client *api.Client, svc *sync.Service) *App {
 	theme := LoadTheme()
 	styles := NewStyles(theme)
 	app := &App{
-		theme: theme, styles: styles,
+		theme: &theme, styles: &styles,
 		client: client, cfg: cfg, svc: svc,
 		screen: screenDashboard,
 	}
 	if cfg.APIKey == "" {
 		app.screen = screenLogin
 	}
-	app.login = NewLogin(cfg, client, theme, styles)
-	app.dashboard = NewDashboard(theme, styles)
-	app.review = NewReview(theme, styles)
-	app.browse = NewBrowse(theme, styles)
-	app.stats = NewStats(theme, styles)
-	app.tagPicker = NewTagPicker(theme, styles)
+	app.login = NewLogin(cfg, client, app.theme, app.styles)
+	app.dashboard = NewDashboard(app.theme, app.styles)
+	app.review = NewReview(app.theme, app.styles)
+	app.browse = NewBrowse(app.theme, app.styles)
+	app.stats = NewStats(app.theme, app.styles)
+	app.tagPicker = NewTagPicker(app.theme, app.styles)
 	return app
 }
 
@@ -118,7 +125,8 @@ func (a *App) Init() tea.Cmd {
 	if a.svc != nil {
 		cmds = append(cmds, a.refreshCmd())
 	}
-	cmds = append(cmds, offlineTick())
+	cmds = append(cmds, offlineTick(), themeTick())
+	a.themeFingerprint = currentThemeFingerprint()
 	return tea.Batch(cmds...)
 }
 
@@ -194,6 +202,14 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return a, tea.Batch(a.drainOutboxCmd(), offlineTick())
 		}
 		return a, offlineTick()
+
+	case themeTickMsg:
+		if fp := currentThemeFingerprint(); fp != a.themeFingerprint {
+			a.themeFingerprint = fp
+			ApplyTheme(a.theme, a.styles)
+			a.status = "theme updated"
+		}
+		return a, themeTick()
 
 	case outboxDrainedMsg:
 		a.queued = msg.remaining

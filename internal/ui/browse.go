@@ -13,8 +13,8 @@ import (
 
 // BrowseModel is the searchable card list.
 type BrowseModel struct {
-	theme  Theme
-	styles Styles
+	theme  *Theme
+	styles *Styles
 
 	filter    textinput.Model
 	filtering bool
@@ -24,7 +24,7 @@ type BrowseModel struct {
 	detail    bool
 }
 
-func NewBrowse(t Theme, s Styles) BrowseModel {
+func NewBrowse(t *Theme, s *Styles) BrowseModel {
 	f := textinput.New()
 	f.Placeholder = "filter cards…"
 	f.Prompt = "/"

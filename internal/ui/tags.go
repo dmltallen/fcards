@@ -24,8 +24,8 @@ type TagItem struct {
 
 // TagPicker is the keyboard-first study selector with autocomplete.
 type TagPicker struct {
-	theme  Theme
-	styles Styles
+	theme  *Theme
+	styles *Styles
 	svc    *sync.Service
 
 	filter    textinput.Model
@@ -35,7 +35,7 @@ type TagPicker struct {
 	statusMsg string
 }
 
-func NewTagPicker(t Theme, s Styles) TagPicker {
+func NewTagPicker(t *Theme, s *Styles) TagPicker {
 	f := textinput.New()
 	f.Placeholder = "type to find decks or tags…"
 	f.Prompt = "/"

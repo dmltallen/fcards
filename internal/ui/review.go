@@ -35,8 +35,8 @@ func imageKick() tea.Cmd {
 
 // ReviewModel runs one review session over a snapshot queue.
 type ReviewModel struct {
-	theme  Theme
-	styles Styles
+	theme  *Theme
+	styles *Styles
 	svc    *sync.Service
 
 	queue    []sync.Card
@@ -57,7 +57,7 @@ type ReviewModel struct {
 	nextDue         *time.Time
 }
 
-func NewReview(t Theme, s Styles) ReviewModel {
+func NewReview(t *Theme, s *Styles) ReviewModel {
 	return ReviewModel{theme: t, styles: s}
 }
 

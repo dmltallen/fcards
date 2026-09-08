@@ -190,6 +190,49 @@ func deriveColor(bg, fg string, target float64, candidates ...string) string {
 	return blend(bg, fg, 0.95) // extremely low-contrast theme: near-full fg
 }
 
+// ApplyTheme re-derives the theme from the current Omarchy theme and rebuilds
+// shared styles in place. Models hold these pointers, so every screen picks
+// the change up without being rebuilt.
+func ApplyTheme(t *Theme, s *Styles) {
+	*t = LoadTheme()
+	*s = NewStyles(*t)
+}
+
+// currentThemeFingerprint builds a cheap fingerprint of everything that
+// affects the app theme, using the same state files the Omarchy shell itself
+// watches (no subprocesses):
+//
+//   - ~/.local/state/omarchy/current/theme.name  (written on every theme set)
+//   - ~/.local/state/omarchy/current/theme       (symlink re-pointed per theme)
+//   - the resolved colors.toml                   (catches in-place overlay edits)
+//
+// Falls back to `omarchy theme current` output on older setups without the
+// state files.
+func currentThemeFingerprint() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	currentDir := filepath.Join(home, ".local", "state", "omarchy", "current")
+
+	parts := []string{}
+
+	if data, err := os.ReadFile(filepath.Join(currentDir, "theme.name")); err == nil {
+		parts = append(parts, strings.TrimSpace(string(data)))
+	}
+	if fi, err := os.Lstat(filepath.Join(currentDir, "theme")); err == nil {
+		parts = append(parts, strconv.FormatInt(fi.ModTime().UnixNano(), 10))
+	}
+	if fi, err := os.Stat(filepath.Join(currentDir, "theme", "colors.toml")); err == nil {
+		parts = append(parts, strconv.FormatInt(fi.ModTime().UnixNano(), 10))
+	}
+
+	if len(parts) == 0 {
+		return omarchyThemeName() // legacy fallback
+	}
+	return strings.Join(parts, "|")
+}
+
 // --- shared styles ---
 
 type Styles struct {

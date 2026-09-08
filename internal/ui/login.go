@@ -26,8 +26,8 @@ type codeVerifiedMsg struct {
 type LoginModel struct {
 	cfg    *store.Config
 	client *api.Client
-	theme  Theme
-	styles Styles
+	theme  *Theme
+	styles *Styles
 
 	email textinput.Model
 	code  textinput.Model
@@ -40,7 +40,7 @@ type LoginModel struct {
 	finished     bool
 }
 
-func NewLogin(cfg *store.Config, client *api.Client, t Theme, s Styles) LoginModel {
+func NewLogin(cfg *store.Config, client *api.Client, t *Theme, s *Styles) LoginModel {
 	email := textinput.New()
 	email.Placeholder = "you@example.com"
 	email.Focus()

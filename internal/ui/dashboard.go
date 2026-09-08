@@ -19,8 +19,8 @@ type TagCount struct {
 
 // DashboardModel is the home screen: queue snapshot, streak, tag breakdown.
 type DashboardModel struct {
-	theme    Theme
-	styles   Styles
+	theme    *Theme
+	styles   *Styles
 	loaded   bool
 	counts   sync.Counts
 	streak   int
@@ -30,7 +30,7 @@ type DashboardModel struct {
 	selected []string
 }
 
-func NewDashboard(t Theme, s Styles) DashboardModel {
+func NewDashboard(t *Theme, s *Styles) DashboardModel {
 	return DashboardModel{theme: t, styles: s}
 }
 
@@ -177,7 +177,7 @@ func (m DashboardModel) isSelectedTag(tag string) bool {
 	return false
 }
 
-func stat(s Styles, label string, value any, color lipgloss.Color) string {
+func stat(s *Styles, label string, value any, color lipgloss.Color) string {
 	v := fmt.Sprint(value)
 	return s.Dim.Render(label) + " " + lipgloss.NewStyle().Bold(true).Foreground(color).Render(v)
 }
